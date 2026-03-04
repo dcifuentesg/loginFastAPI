@@ -59,6 +59,16 @@ def startup_seed():
 
 # ---------- Auth ----------
 
+@app.post("/auth/register", response_model=schemas.UserResponse, status_code=201)
+def register(data: schemas.UserCreate, db: Session = Depends(get_db)):
+    if crud.get_user_by_email(db, data.email):
+        raise HTTPException(
+            status_code=409,
+            detail="A user with that email already exists",
+        )
+    return crud.create_user(db, data)
+
+
 @app.post("/auth/login", response_model=schemas.LoginResponse)
 def login(data: schemas.LoginRequest, db: Session = Depends(get_db)):
     user = crud.authenticate_user(db, data.email, data.password)
